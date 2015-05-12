@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>8Dit</title>
+		<script src="js/three.min2.js"></script>
+		<script src="js/three-js-object-loader.js"></script>
+		<!--<script src="js/OBJLoader.js"></script>-->
+	</head>
+
+	<body>
+		<script>
+			
+			var marios = [];
+
+			function resizeContainer() {
+				var width = window.innerWidth,
+				height = width;
+
+				camera.aspect = width / height;
+
+				camera.updateProjectionMatrix();
+				renderer.setSize(width, height);
+				console.log("w="+width+" h="+height);
+			}
+			function deg2rad(deg) {
+				return deg * (Math.PI / 180);
+			}
+			var VIEW_ANGLE = 45,
+				NEAR = 0.1,
+				FAR = 10000,
+				pointLight = new THREE.PointLight(0xFFFFFF),
+				width = window.innerWidth,
+				height = width;
+
+			renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
+
+			renderer.setClearColor(0x000000, 0);
+
+			camera = new THREE.PerspectiveCamera(45, 1, 0.1, 10000);
+			scene  = new THREE.Scene();
+
+			scene.add(camera);
+
+			camera.position.x = 30;
+			camera.position.y = 300;
+
+			document.body.appendChild( renderer.domElement );
+
+			pointLight.position.x = 50;
+			pointLight.position.y = 200;
+			pointLight.position.z = 30;
+
+			scene.add(pointLight);
+			
+			var texture = THREE.ImageUtils.loadTexture("asset/mario_tex.png");
+			
+			for (var i = 0; i < 12; i += 1) {
+				// encapsulating in a closure to avoid scope leakages on the iterator value
+				(function (i) {
+					(new THREE.OBJLoader())
+						.load("asset/Frame_" + (i + 1) + ".obj", function (geometries) {
+							var material = new THREE.MeshLambertMaterial({map: texture}),
+							shield = new THREE.Mesh(geometries.children[0].geometry, material);
+
+							shield.rotation.y = deg2rad(90);
+
+							shield.scale.set(10, 10, 10);
+							scene.add(shield);
+							shield.geometry.applyMatrix(new THREE.Matrix4().makeTranslation(1.1, 0.5, 0));
+							shield.visible = false;
+
+							marios[i] = shield;
+							console.log("m("+i+")="+marios[i]);
+						});
+				}(i));
+			}
+
+			resizeContainer();
+			
+			function render(timestamp) {
+
+				var rotation = (((timestamp / 1000) * 0.3 * 360) % 360) * (Math.PI / 180),
+					currentMarioIndex = parseInt((timestamp / 1000) * 9 % 12);
+
+				for (var i in marios) {
+					if (marios.hasOwnProperty(i)) {
+						marios[i].visible    = (i == currentMarioIndex);
+						marios[i].rotation.z = rotation;
+					}
+				}
+				
+				camera.lookAt(scene.position);
+
+				renderer.render(scene, camera);
+				
+				requestAnimationFrame( render );
+			}
+			
+			render(0);
+			
+		</script>
+	</body>
+
+</html>
