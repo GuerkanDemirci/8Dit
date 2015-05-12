@@ -75,6 +75,14 @@
 				}(i));
 			}
 
+			var texture2 = THREE.ImageUtils.loadTexture("asset/city.png");
+			var geometry = new THREE.CylinderGeometry( 215, 215, 240, 32, 1, true );
+			var material = new THREE.MeshLambertMaterial( {map: texture2} );
+			material.side = THREE.BackSide;
+			var cylinder = new THREE.Mesh( geometry, material );
+			cylinder.rotation.z = deg2rad(90);
+			scene.add( cylinder );			
+			
 			resizeContainer();
 			
 			function render(timestamp) {
@@ -88,6 +96,8 @@
 						marios[i].rotation.z = rotation;
 					}
 				}
+
+				cylinder.rotation.x = (((timestamp / 3500) * 0.3 * 360) % 360) * (Math.PI / 180);				
 				
 				camera.lookAt(scene.position);
 
